@@ -6,7 +6,7 @@
   "license": "MIT",
   "author": "Stefan Boos <kontakt@boos.systems>",
   "type": "commonjs",
-  "main": "app/main.js",
+  "main": "frontend/main.js",
   "scripts": {
     "start": "sirv --dev --no-clear --port 3000"
   },
