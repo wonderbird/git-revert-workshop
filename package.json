@@ -1,0 +1,16 @@
+{
+  "name": "git-workshop",
+  "version": "0.0.0",
+  "description": "Git revert workshop for continuous integration and branching experiments",
+  "private": true,
+  "license": "MIT",
+  "author": "Stefan Boos <kontakt@boos.systems>",
+  "type": "commonjs",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "sirv --dev --no-clear --port 3000"
+  },
+  "devDependencies": {
+    "sirv-cli": "^3.0.1"
+  }
+}
