@@ -10,21 +10,25 @@ const requestListener = async function (request, response) {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Content-Type", "application/json");
 
-    const environment = new URL(request.url, `http://${host}:${port}`).searchParams.get("environment") || "develop";
-    console.log(`${request.method} ${request.url} - Environment: ${environment} - Branch: ${getBranchOf(environment)}`);
+    const ressource = request.url.split("?")[0];
+    const environment = new URL(request.url, `http://${host}:${port}`).searchParams.get("environment") || "prod";
 
-    if (request.method === "GET" && request.url.startsWith("/commits")) {
-        const commits = await listCommits(environment);
-        response.writeHead(200);
-        response.end(JSON.stringify(commits));
-    } else if (request.method === "GET" && request.url.startsWith("/workflows")) {
-        const workflows = await listWorkflows();
-        response.writeHead(200);
-        response.end(JSON.stringify(workflows));
+    console.log(`${request.method} ${ressource} for environment "${environment}", i.e. branch "${getBranchOf(environment)}"`);
+
+    let statusCode = 200;
+    let result = {};
+
+    if (request.method === "GET" && ressource === "/commits") {
+        result = await listCommits(environment);
+    } else if (request.method === "GET" && ressource === "/workflows") {
+        result = listWorkflows();
     } else {
-        response.writeHead(404);
-        response.end(JSON.stringify({ error: "Not Found" }));
+        statusCode = 404;
+        result = { error: `Requested resource "${ressource}" not found` };
     }
+
+    response.writeHead(statusCode);
+    response.end(JSON.stringify(result));
 }
 
 const listCommits = async function (environment) {
