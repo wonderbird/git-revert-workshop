@@ -10,11 +10,14 @@ const requestListener = async function (request, response) {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Content-Type", "application/json");
 
-    if (request.method === "GET" && request.url === "/commits") {
-        const commits = await listCommits();
+    const environment = new URL(request.url, `http://${host}:${port}`).searchParams.get("environment") || "develop";
+    console.log(`${request.method} ${request.url} - Environment: ${environment} - Branch: ${getBranchOf(environment)}`);
+
+    if (request.method === "GET" && request.url.startsWith("/commits")) {
+        const commits = await listCommits(environment);
         response.writeHead(200);
         response.end(JSON.stringify(commits));
-    } else if (request.method === "GET" && request.url === "/workflows") {
+    } else if (request.method === "GET" && request.url.startsWith("/workflows")) {
         const workflows = await listWorkflows();
         response.writeHead(200);
         response.end(JSON.stringify(workflows));
@@ -24,10 +27,11 @@ const requestListener = async function (request, response) {
     }
 }
 
-const listCommits = async function () {
+const listCommits = async function (environment) {
+    const branch = getBranchOf(environment);
     const options = {
-        "from": "HEAD~3",
-        "to": "HEAD",
+        "from": `${branch}~3`,
+        "to": `${branch}`,
     }
     const logs = await simpleGit().log(options);
     
@@ -41,6 +45,17 @@ const listCommits = async function () {
         };
     });
 };
+
+const getBranchOf = function (environment) {
+    switch (environment) {
+        case "prod":
+            return "main";
+        case "test":
+            return "develop";
+        default:
+            return "main";
+    }
+}
 
 const listWorkflows = function () {
     try {
