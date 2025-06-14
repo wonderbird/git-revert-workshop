@@ -3,21 +3,22 @@
   listRecentCommits();
 })();
 
-function listRecentlyDeployedWorkflows() {
-  const numberOfWorkflows = 3;
+async function listRecentlyDeployedWorkflows() {
+  try {
+    const numberOfWorkflows = 3;
 
-  fetch('/workflows.txt')
-    .then(response => response.text())
-    .then(data => {
-      const workflows = data.split('\n')
-                            .filter(line => line.trim() !== '')
-                            .reverse()
-                            .slice(0, numberOfWorkflows);
-
-      workflows.forEach(workflow => {
-        displayWorkflow(workflow);
-      });
+    const response = await fetch('/workflows.txt');
+    const workflowsAsText = await response.text();
+    const workflows = workflowsAsText.split('\n')
+                                      .filter(line => line.trim() !== '')
+                                      .reverse()
+                                      .slice(0, numberOfWorkflows);
+    workflows.forEach(workflow => {
+      displayWorkflow(workflow);
     });
+  } catch(error) {
+    console.error(error.message);
+  }
 }
 
 function displayWorkflow(workflow) {

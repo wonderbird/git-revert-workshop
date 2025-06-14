@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "sirv-cli": "^3.0.1"
+  },
+  "dependencies": {
+    "simple-git": "^3.28.0"
   }
 }

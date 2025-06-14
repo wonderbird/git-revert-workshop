@@ -1,17 +1,30 @@
 const http = require("http");
+const simpleGit = require("simple-git");
 
 const host = 'localhost';
 const port = 5001;
 
-const listCommits = function (request, response) {
+const listCommits = async function (request, response) {
+    const options = {
+        "from": "HEAD~3",
+        "to": "HEAD",
+    }
+    const logs = await simpleGit().log(options);
+    
+    const commits = logs.all.map(function(log) {
+        return {
+            "date": log.date.slice(0, 10),
+            "time": log.date.slice(11, 19),
+            "author": log.author_name,
+            "message": log.message,
+
+        };
+    });
+
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Content-Type", "application/json");
     response.writeHead(200);
-    response.end(JSON.stringify([
-        { "date": "2025-06-13", "time": "12:37", "message": "feat: acknowledge order" },
-        { "date": "2025-06-13", "time": "11:54", "message": "feat: submit order" },
-        { "date": "2025-06-13", "time": "10:13", "message": "feat: create contact" }
-    ]));
+    response.end(JSON.stringify(commits));
 };
 
 const server = http.createServer(listCommits);
