@@ -5,48 +5,65 @@ Git revert workshop for continuous integration and branching experiments.
 In this workshop you will learn to revert commits on a branch, which is
 used for integration testing.
 
+To run the workshop, simply create a new repository by using this template.
+You can run the workshop on your computer with Nodejs or on a GitHub
+codespace. The latter runs out of the box and the codespace can be deleted
+when you are done.
+
 ## Branching strategy: `main`, `develop`, `feat/xyz`
 
 We simulate a system with a "production" environment (PROD) and an
 integration "test" environment (TEST). PROD represents the system used by the
-end users. TEST represents a copy of PROD, which the development teams for
-verifying their changes before they send them to the PROD system.
+end users. TEST is a copy of PROD. The development teams verify their changes
+in the TEST system before they send them to the PROD system.
 
 In our git repository, the PROD system is represented by the `main` branch,
 the TEST system is represented by the `develop` branch.
 
 When a developer (team) starts a new feature, they create a branch `feat/xyz`
-from `develop`. When they are done developing the feature, they merge their
-feature branch to `develop`. The TEST system is then rebuilt and the developers
-can run integration tests.
+from `develop`. When the feature is ready for testing, they merge their
+feature branch into `develop`. Then the TEST system is updated and the
+developers run integration tests.
 
-If all tests succeed, then the developers merge `develop` into `main`. This
-causes the feature to appear in the PROD system. Next, they merge `main` back
-into `develop` to ensure that both branches are in sync. Finally, they delete
-their feature branch.
+If all tests pass, the developers merge `develop` into `main`. This causes the
+feature to appear in the PROD system.
 
-## Exercise
+Finally, they merge `main` back into `develop` to ensure that both branches
+are always in sync. They usually delete their feature branch afterwards.
 
-You will simulate implementing features, by adding rows with the use case
-description to the file [workflows.txt](./workflows.txt).
+## About the exercises
 
-You will run the "System" shipped in this repository to see what is deployed
-to TEST and PROD, respectively. The "System" simply shows the contents of the
-[workflows.txt](./workflows.txt) file effective for the corresponding
-environment. It also shows the commits, that are considered for the respective
-environment.
+The exercises simulate how multiple teams develop features concurrently.
 
-### Run "The System"
+Exercise 1 shows the happy path: The feature works out of the box.
 
-#### Prerequisites
+Exercise 2 shows the unhappy path: A feature doesn't pass the integration tests
+and needs to be fixed. While we fix the broken feature, we free the TEST
+system so that other teams could ship their features while we are debugging.
 
-After cloning this repository, restore the node modules:
+Exercise 3 shows the unhappy path from the perspective of two teams working
+concurrently.
+
+In this simulation "The System" is represented by the contents of the
+[workflows.txt](./workflows.txt) file on either the `main` branch (PROD) or
+on the `develop` branch (TEST).
+
+We have a small web application which visualizes this and allows switching
+between PROD and TEST easily. The web application also shows the commits,
+that are considered by each environment.
+
+## How to run "The System"
+
+### Prerequisites
+
+After you have created the new repository from this template or when your
+GitHub codespace has started, restore the node modules:
 
 ```shell
 npm install
 ```
 
-#### Start "The System"
+### Start "The System"
 
 The system consists of a frontend and a backend.
 
@@ -58,7 +75,7 @@ npm run backend
 
 If you run this project in a GitHub codespace, then make the endpoint public.
 
-Next, get the endpoint URL from the **Ports** tab of your VisualStudio Code
+Next, copy the endpoint URL from the **Ports** tab of your VisualStudio Code
 instance in the codespace and paste it as the `baseUrl` in
 [frontend/main.js](./frontend/main.js).
 
@@ -70,8 +87,11 @@ Then, in a second terminal, serve the frontend:
 npm run frontend
 ```
 
-Open the URL shown in the output of the frontend to view "The System" in your
-browser.
+In a codespace you can open can open the exposed port 3000 by right clicking
+it and selecting **Preview in Editor**.
+
+Otherwise, open the URL shown in the output of the frontend to view
+"The System" in your browser.
 
 ### Create a `develop` branch
 
@@ -86,13 +106,13 @@ see a difference up to now.
 
 ### Exercise 1: Implement and ship a working feature
 
-By "implement a feature" we mean that you add a line to the file
+By "implement a feature" we mean that you add a line to the end of the file
 [workflows.txt](./workflows.txt). This will simulate the work required to add
 a use case to the system.
 
 1. Create and checkout the feature branch `feat/register` based on the `develop` branch
 2. Add the line `Register User: As a user I want to register, so that I can log in.` to the file [workflows.txt](./workflows.txt) and commit the changes with a speaking commit message
-3. Merge the feature branch into `develop`
+3. Merge the feature branch into `develop`. Attention: Always create a merge commit, so that we could revert the merge easily. Use the `--no-ff` option in `git merge --no-ff feat/register`.
 4. Refresh your web browser showing "The System" and compare the PROD system to the TEST system. TEST should show the added workflow while PROD is still empty.
 5. Now let's assume that our integration tests were successful. Merge `develop` into `main`.
 6. Refresh your web browser again. Now PROD and TEST should show the same workflows, but a different commit history - The final merge commit is missing on TEST.
