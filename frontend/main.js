@@ -5,17 +5,17 @@
 
 async function listRecentlyDeployedWorkflows() {
   try {
-    const numberOfWorkflows = 3;
-
-    const response = await fetch('/workflows.txt');
-    const workflowsAsText = await response.text();
-    const workflows = workflowsAsText.split('\n')
-                                      .filter(line => line.trim() !== '')
-                                      .reverse()
-                                      .slice(0, numberOfWorkflows);
-    workflows.forEach(workflow => {
-      displayWorkflow(workflow);
+    const request = new Request('http://localhost:5001/workflows', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
     });
+
+    const response = await fetch(request);
+
+    const workflows = await response.json();
+    workflows.forEach(displayWorkflow);
   } catch(error) {
     console.error(error.message);
   }
