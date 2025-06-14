@@ -33,21 +33,23 @@ const requestListener = async function (request, response) {
 
 const listCommits = async function (environment) {
     const branch = getBranchOf(environment);
-    const options = {
-        "from": `${branch}~3`,
-        "to": `${branch}`,
-    }
-    const logs = await simpleGit().log(options);
-    
-    return logs.all.map(function(log) {
-        return {
-            "date": log.date.slice(0, 10),
-            "time": log.date.slice(11, 19),
-            "author": log.author_name,
-            "message": log.message,
 
-        };
-    });
+    try {
+        const logs = await simpleGit().log(['--max-count=3', branch]);
+
+        return logs.all.map(function(log) {
+            return {
+                "date": log.date.slice(0, 10),
+                "time": log.date.slice(11, 19),
+                "author": log.author_name,
+                "message": log.message,
+
+            };
+        });
+    } catch (error) {
+        console.error(`Error fetching commits: ${error.message}`);
+        return [];
+    }
 };
 
 const getBranchOf = function (environment) {
