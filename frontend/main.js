@@ -1,31 +1,51 @@
 (async () => {
   const baseUrl = 'http://localhost:5001/';
-  
-  registerButton(baseUrl, 'prod');
-  registerButton(baseUrl, 'test');
 
-  await update(baseUrl, 'prod');
+  const prodContext = buildContext(baseUrl, 'prod');
+  const testContext = buildContext(baseUrl, 'test');
+
+  if (!prodContext.workflowList || !prodContext.commitList) {
+    console.error('UI controls not found. Ensure the HTML elements with IDs "workflows" and "commits" exist.');
+    return;
+  }
+
+  registerButton(prodContext);
+  registerButton(testContext);
+
+  await update(prodContext);
 })();
 
-function registerButton(baseUrl, environment) {
-  const button = document.getElementById(environment);
+function buildContext(baseUrl, environment) {
+  return {
+    baseUrl: baseUrl,
+    environment: environment,
+    workflowList: document.getElementById('workflows'),
+    commitList: document.getElementById('commits'),
+  };
+}
+
+function registerButton(context) {
+  const button = document.getElementById(context.environment);
   if (button) {
-    button.addEventListener('click', async () => await update(baseUrl, environment));
+    button.addEventListener('click', async () => await update(context));
   }
 }
 
-async function update(baseUrl, environment) {
+async function update(context) {
+  context.workflowList.innerHTML = '';
+  context.commitList.innerHTML = '';
+
   try {
-    await listRecentlyDeployedWorkflows(baseUrl, environment);
-    await listRecentCommits(baseUrl, environment);
+    await listRecentlyDeployedWorkflows(context);
+    await listRecentCommits(context);
   } catch (error) {
     console.error('Error refreshing data:', error.message);
   }
 }
 
-async function listRecentlyDeployedWorkflows(baseUrl, environment) {
-  const workflows = await get(`${baseUrl}workflows?environment=${environment}`);
-  displayWorkflows(workflows);
+async function listRecentlyDeployedWorkflows(context) {
+  const workflows = await get(`${context.baseUrl}workflows?environment=${context.environment}`);
+  workflows.forEach(workflow => displayWorkflow(context, workflow));
 }
 
 async function get(url) {
@@ -44,56 +64,32 @@ async function get(url) {
   return result;
 }
 
-function displayWorkflows(workflows) {
-  const workflowList = document.getElementById('workflows');
-  if (workflowList) {
-    workflowList.innerHTML = '';
-  }
-  workflows.forEach(displayWorkflow);
+function displayWorkflow(context, workflow) {
+  const listItem = document.createElement('li');
+  listItem.className = 'list-group-item';
+  listItem.textContent = workflow;
+  context.workflowList.appendChild(listItem);
 }
 
-function displayWorkflow(workflow) {
-  const workflowList = document.getElementById('workflows');
-
-  if (workflowList) {
-    const listItem = document.createElement('li');
-    listItem.className = 'list-group-item';
-    listItem.textContent = workflow;
-    workflowList.appendChild(listItem);
-  }
+async function listRecentCommits(context) {
+  const commits = await get(`${context.baseUrl}commits?environment=${context.environment}`);
+  commits.forEach(commit => displayCommit(context, commit));
 }
 
-async function listRecentCommits(baseUrl, environment) {
-  const commits = await get(`${baseUrl}commits?environment=${environment}`);
-  displayCommits(commits);
-}
+function displayCommit(context, commit) {
+  const tableRow = document.createElement('tr');
 
-function displayCommits(commits) {
-  const commitList = document.getElementById('commits');
-  if (commitList) {
-    commitList.innerHTML = '';
-  }
-  commits.forEach(displayCommit);
-}
+  const dateColumn = document.createElement('td');
+  dateColumn.textContent = commit.date;
+  tableRow.appendChild(dateColumn);
 
-function displayCommit(commit) {
-  const commitList = document.getElementById('commits');
+  const timeColumn = document.createElement('td');
+  timeColumn.textContent = commit.time;
+  tableRow.appendChild(timeColumn);
 
-  if (commitList) {
-    const tableRow = document.createElement('tr');
+  const messageColumn = document.createElement('td');
+  messageColumn.textContent = commit.message;
+  tableRow.appendChild(messageColumn);
 
-    const dateColumn = document.createElement('td');
-    dateColumn.textContent = commit.date;
-    tableRow.appendChild(dateColumn);
-
-    const timeColumn = document.createElement('td');
-    timeColumn.textContent = commit.time;
-    tableRow.appendChild(timeColumn);
-
-    const messageColumn = document.createElement('td');
-    messageColumn.textContent = commit.message;
-    tableRow.appendChild(messageColumn);
-
-    commitList.appendChild(tableRow);
-  }
+  context.commitList.appendChild(tableRow);
 }
