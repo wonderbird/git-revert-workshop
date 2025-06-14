@@ -21,7 +21,7 @@ const requestListener = async function (request, response) {
     if (request.method === "GET" && ressource === "/commits") {
         result = await listCommits(environment);
     } else if (request.method === "GET" && ressource === "/workflows") {
-        result = listWorkflows();
+        result = await listWorkflows(environment);
     } else {
         statusCode = 404;
         result = { error: `Requested resource "${ressource}" not found` };
@@ -61,20 +61,19 @@ const getBranchOf = function (environment) {
     }
 }
 
-const listWorkflows = function () {
+const listWorkflows = async function (environment) {
+    const branch = getBranchOf(environment);
+    const filePath = path.join('..', 'workflows.txt');
+    
     try {
-        const numberOfWorkflows = 3;
-        const filePath = path.join(__dirname, '..', 'workflows.txt');
-        
-        const content = fs.readFileSync(filePath, 'utf-8');
-
+        const content = await simpleGit().show([`${branch}:${filePath}`]);
         const workflows = content.split('\n')
                                 .filter(line => line.trim() !== '')
                                 .reverse()
-                                .slice(0, numberOfWorkflows);
+                                .slice(0, 3);
         return workflows;
-    } catch(error) {
-        console.error(error.message);
+    } catch (error) {
+        console.error(`Error fetching workflows: ${error.message}`);
         return [];
     }
 }

@@ -1,4 +1,1 @@
-Add to Cart: As a customer I can add an item to the shopping cart.
-Enter Contact: As a customer I can enter my contact information.
-Submit Order: As a customer I can submit an order.
-Acknowledge Order: As an order manager I can acknowledge an order.
+No workflows: No workflows have been implemented yet.
