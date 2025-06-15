@@ -32,10 +32,11 @@ const requestListener = async function (request, response) {
 }
 
 const listCommits = async function (environment) {
+    const maximumNumberOfCommits = 10;
     const branch = getBranchOf(environment);
 
     try {
-        const logs = await simpleGit().log(['--max-count=3', branch]);
+        const logs = await simpleGit().log([`--max-count=${maximumNumberOfCommits}`, branch]);
 
         return logs.all.map(function(log) {
             return {
