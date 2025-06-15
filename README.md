@@ -11,12 +11,20 @@ phase of concurrent development. This workshop addresses the step
 >
 > -- James Shore (1)
 
+## Run the workshop as a team or individually
+
 You can run this workshop as a team or individually.
 
 If you are working as a team, then click the **Use this template** in the top
 right to create a new repository. Share the repository URL and clone it to
 every participant's computer. You will work in the same remote repository.
 Push every change to the remote and pull all other developer checkouts.
+
+>[!NOTE]
+>
+>The workshop provides a small web application to visualize the development
+>status. One person in the team should have a recent Node.js version on their
+>computer to run the web app.
 
 If you are running the exercises alone, the **Use this template** allows to
 open a new GitHub codespace with a fresh copy. There is no need for pushing
@@ -61,19 +69,19 @@ feature into `develop`. They revert that merge commit so that the other team
 can ship a working feature. Then the broken feature is fixed and shipped in
 addition.
 
-## "The System" used for the simulation
+## "The System" and the simulation
 
 In this simulation "The System" is represented by the contents of the
 [workflows.txt](./workflows.txt) file on either the `main` branch (PROD) or
-on the `develop` branch (TEST). This file describes the features added to
-the system.
+on the `develop` branch (TEST). This file describes the features available
+in the system.
 
 The simulation provides a small web application to visualize the features
 described in [workflows.txt](./workflows.txt). The web app allows switching
 between PROD and TEST easily. It also shows the commits, that are considered
 by each environment.
 
-## How to run the simulation web app
+## Run the simulation web app
 
 ### Prerequisites
 
@@ -124,7 +132,7 @@ git checkout -b develop
 Now you can switch between PROD and TEST in the simulation web app.
 Note that you will not see a difference between the environments up to now.
 
-## Visualizing the git history in Visual Studio Code
+## Visualize the git history in Visual Studio Code
 
 If you are working in Visual Studio Code, you can use the **Graph** panel of
 the **Source Control** view to inspect the recent commits. The toolbar of that
