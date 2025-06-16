@@ -2,7 +2,7 @@
 
 Git revert workshop for continuous integration and branching experiments.
 
-In this workshop you will learn to revert commits on a branch, which is
+In this workshop you will learn to revert merge commits on a branch, which is
 used for integration testing. The article (1) shown in the section Literature
 below describes in detail how teams can resolve conflicts in the integration
 phase of concurrent development. This workshop addresses the step
@@ -11,27 +11,59 @@ phase of concurrent development. This workshop addresses the step
 >
 > -- James Shore (1)
 
-## Run the workshop as a team or individually
+## Run the workshop
 
 You can run this workshop as a team or individually.
 
-If you are working as a team, then click the **Use this template** in the top
-right to create a new repository. Share the repository URL and clone it to
-every participant's computer. You will work in the same remote repository.
-Push every change to the remote and pull all other developer checkouts.
+The workshop provides a small web application to visualize the development
+status. If you want to run the workshop in a GitHub codespace, you are ready.
+If you are using your local comupter, then you need a recent Node.js version to
+run the web app.
 
->[!NOTE]
->
->The workshop provides a small web application to visualize the development
->status. One person in the team should have a recent Node.js version on their
->computer to run the web app.
+### Team setup: Create workshop repository
 
-If you are running the exercises alone, the **Use this template** allows to
-open a new GitHub codespace with a fresh copy. There is no need for pushing
-and pulling in this setup. You can work entirely on the codespace and delete
-it afterwards.
+If you are working as a team, then click the green **Use this template** in the
+top right and **Create a new repository**.
+
+Go to the **Settings** of the new repository and select **Collaborators** from
+the menu. Invite your team members.
+
+From the shared repository, every team member uses the green **Code** button
+in the top right to
+
+- either clone the shared repository to their computer
+- or to start the repository in an individual GitHub codespace.
+
+Make sure that you push all local changes to the remote, so that your team
+mates can reproduce the workshop steps.
+
+### Single person setup
+
+If you run the workshop alone you can set up your own repository as described
+above.
+
+Alternatively, you can directly open the workshop repository as a GitHub
+codespace using the green **Use this template** in the top right, followed by
+**Open in a codespace**.
+
+In a codespace, there is no need for pushing and pulling. You can work entirely
+inside the codespace and delete it afterwards.
 
 ## Branching strategy: `main`, `develop`, `feat/xyz`
+
+```mermaid
+gitGraph
+   commit id: "Initial commit"
+   branch develop
+   branch feat/xyz
+   commit id: "feat: ..."
+   checkout develop
+   merge feat/xyz tag: "TEST"
+   checkout main
+   merge develop tag: "PROD"
+   checkout develop
+   merge main
+```
 
 We simulate a system with a "production" environment (PROD) and an
 integration "test" environment (TEST). PROD represents the system used by the
@@ -93,7 +125,10 @@ npm install
 
 ### Start the simulation web app
 
-The simulation web app consists of a frontend and a backend.
+![Simulation web app](./docs/codespace.png)
+
+The simulation web app is shown in the right editor view. It consists of a
+frontend and a backend.
 
 First, start the backend in a terminal:
 
@@ -155,6 +190,23 @@ By "implement a feature" we mean that you add a line to the end of the file
 [workflows.txt](./workflows.txt). This will simulate the work required to add
 a use case to the system.
 
+```mermaid
+---
+title: Happy path
+---
+gitGraph
+   commit id: "Initial commit"
+   branch develop
+   branch feat/register
+   commit id: "feat: register user"
+   checkout develop
+   merge feat/register tag: "GREEN"
+   checkout main
+   merge develop tag: "v1"
+   checkout develop
+   merge main
+```
+
 1. Create and checkout the feature branch `feat/register` based on the `develop` branch: `git switch develop; git checkout -b feat/register`
 
 2. Add the line `Register User: As a user I want to register, so that I can log in.` to the file [workflows.txt](./workflows.txt) and commit the changes with a speaking commit message: `git commit -am "feat: register user"`
@@ -176,6 +228,30 @@ You have successfully added a feature :-)
 ### Exercise 2: Implement a feature failing the tests in TEST, revert, fix, ship to PROD
 
 In this exercise, we will add a new workflow with typo in the short description.
+
+```mermaid
+---
+title: Rollback and fix
+---
+gitGraph
+   commit id: "..." tag: "v1"
+   branch develop
+   branch feat/add-to-cart
+   commit id: "feat: add to cart"
+   checkout develop
+   merge feat/add-to-cart tag: "RED"
+   commit id: "revert" type: REVERSE tag: "GREEN"
+   checkout feat/add-to-cart
+   merge develop type: REVERSE
+   commit id: "reapply" type: HIGHLIGHT
+   commit id: "fix: add to cart"
+   checkout develop
+   merge feat/add-to-cart tag: "GREEN"
+   checkout main
+   merge develop tag: "v2"
+   checkout develop
+   merge main
+```
 
 Using the row `-dd to Cart: As a user I want to add a product to the shopping cart, so that I can purchase it later.`, repeat steps 1-4 of exercise 1. Name your feature branch `feat/add-to-cart`.
 
@@ -214,6 +290,45 @@ Using the row `-dd to Cart: As a user I want to add a product to the shopping ca
 ### Exercise 3: Concurrent feature development
 
 In this exercise we will explicitly ship two concurrent features. The first feature is broken. We will revert the commit in TEST so that the second feature can be shipped before the fixed first feature is shipped.
+
+```mermaid
+---
+title: Rollback feature 1 - deploy feature 2 - fix feature 1
+---
+gitGraph
+   commit id: "..." tag: "v2"
+   branch develop
+
+   branch feat/checkout-cart
+   commit id: "feat: checkout cart"
+   
+   checkout develop
+   branch feat/add-paypal
+
+   checkout develop
+   merge feat/checkout-cart tag: "RED"
+   commit id: "revert" type: REVERSE tag: "GREEN"
+
+   checkout feat/add-paypal
+   commit id: "feat: add paypal"
+   checkout develop
+   merge feat/add-paypal tag: "GREEN"
+   checkout main
+   merge develop tag: "v3"
+   checkout develop
+   merge main
+
+   checkout feat/checkout-cart
+   merge develop type: REVERSE
+   commit id: "reapply" type: HIGHLIGHT
+   commit id: "fix: checkout cart"
+   checkout develop
+   merge feat/checkout-cart tag: "GREEN"
+   checkout main
+   merge develop tag: "v4"
+   checkout develop
+   merge main
+```
 
 First, create two feature branches from `develop`:
 
