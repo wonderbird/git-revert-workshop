@@ -1,6 +1,6 @@
 const http = require("http");
 const simpleGit = require("simple-git");
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 const host = 'localhost';
@@ -10,25 +10,65 @@ const requestListener = async function (request, response) {
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Content-Type", "application/json");
 
-    const ressource = request.url.split("?")[0];
+    const resource = request.url.split("?")[0];
+    console.log(`Requested resource: ${resource}`);
+
     const environment = new URL(request.url, `http://${host}:${port}`).searchParams.get("environment") || "prod";
 
-    console.log(`${request.method} ${ressource} for environment "${environment}", i.e. branch "${getBranchOf(environment)}"`);
-
     let statusCode = 200;
-    let result = {};
+    let result = undefined;
 
-    if (request.method === "GET" && ressource === "/commits") {
+    if (request.method !== "GET") {
+        statusCode = 405; // Method Not Allowed
+        result = { error: `Method ${request.method} not allowed` };
+        result = JSON.stringify(result);
+    } else if (resource === "/commits") {
+        console.log(`Environment: "${environment}" => branch: "${getBranchOf(environment)}"`);
         result = await listCommits(environment);
-    } else if (request.method === "GET" && ressource === "/workflows") {
+        result = JSON.stringify(result);
+    } else if (resource === "/workflows") {
+        console.log(`Environment: "${environment}" => branch: "${getBranchOf(environment)}"`);
         result = await listWorkflows(environment);
+        result = JSON.stringify(result);
     } else {
-        statusCode = 404;
-        result = { error: `Requested resource "${ressource}" not found` };
+        [statusCode, result] = await serveFile(resource, response);
     }
 
     response.writeHead(statusCode);
-    response.end(JSON.stringify(result));
+    response.end(result);
+}
+
+const serveFile = async function (resource, response) {
+    const filePath = path.join(__dirname, '..', 'frontend', resource);
+
+    if (resource === "/") {
+        // Default to index.html if the root is requested
+        return serveFile('/index.html', response);
+    }
+
+    try {
+        const content = await fs.readFile(filePath, 'utf8');
+
+        if (resource.endsWith('.html')) {
+            response.setHeader("Content-Type", "text/html");
+        } else if (resource.endsWith('.js')) {
+            response.setHeader("Content-Type", "application/javascript");
+        } else if (resource.endsWith('.css')) {
+            response.setHeader("Content-Type", "text/css");
+        } else {
+            response.setHeader("Content-Type", "text/plain");
+        }
+
+        return [200, content];
+    } catch (error) {
+        console.error(`Error reading file ${filePath}: ${error.message}`);
+
+        if (error.code === 'ENOENT') {
+            return [404, JSON.stringify({ error: `File not found: ${filePath}` })];
+        } else {
+            return [500, JSON.stringify({ error: `Internal server error: ${error.message}` })];
+        }
+    }    
 }
 
 const listCommits = async function (environment) {

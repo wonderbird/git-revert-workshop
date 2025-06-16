@@ -8,12 +8,7 @@
   "type": "commonjs",
   "main": "frontend/main.js",
   "scripts": {
-    "frontend": "cd frontend && sirv --dev --no-clear --port 3000",
-    "backend": "cd backend && node main.js",
-    "start": "echo execute \"npm run frontend\" and \"npm run backend\" in two separate terminals"
-  },
-  "devDependencies": {
-    "sirv-cli": "^3.0.1"
+    "start": "cd backend && node main.js"
   },
   "dependencies": {
     "simple-git": "^3.28.0"
