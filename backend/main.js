@@ -66,7 +66,7 @@ const getBranchOf = function (environment) {
 
 const listWorkflows = async function (environment) {
     const branch = getBranchOf(environment);
-    const filePath = path.join('..', 'workflows.txt');
+    const filePath = '../workflows.txt';
     
     try {
         const content = await simpleGit().show([`${branch}:${filePath}`]);
