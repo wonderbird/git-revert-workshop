@@ -129,7 +129,7 @@ npm install
 
 The simulation web app is shown in the right editor view.
 
-Start the service in a terminal:
+Start the simulation in a terminal:
 
 ```shell
 npm start
