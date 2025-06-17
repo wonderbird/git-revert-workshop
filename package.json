@@ -8,7 +8,7 @@
   "type": "commonjs",
   "main": "frontend/main.js",
   "scripts": {
-    "start": "cd backend && node main.js"
+    "start": "cd simulation && node main.js"
   },
   "dependencies": {
     "simple-git": "^3.28.0"

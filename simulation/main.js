@@ -39,7 +39,7 @@ const requestListener = async function (request, response) {
 }
 
 const serveFile = async function (resource, response) {
-    const filePath = path.join(__dirname, '..', 'frontend', resource);
+    const filePath = path.join(__dirname, 'frontend', resource);
 
     if (resource === "/") {
         // Default to index.html if the root is requested
