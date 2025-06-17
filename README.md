@@ -138,9 +138,9 @@ npm start
 Then open the URL shown in the output to view the simulation web app in your
 browser.
 
-In a codespace you can activate the panel **Ports** next to the **Terminal**
-tab. From there you can right click the port 5001 entry and select
-**Preview in Editor**. This show the web app in the **Simple Browser**.
+To use the integrated **Simple Browser** in a codespace, activate the panel
+**Ports** (1) next to the **Terminal** tab. Right click the **node main.js**
+entry (2) and select **Preview in Editor** (3).
 
 ### Create a `develop` branch
 
