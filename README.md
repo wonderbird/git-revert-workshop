@@ -127,34 +127,20 @@ npm install
 
 ![Simulation web app](./docs/codespace.png)
 
-The simulation web app is shown in the right editor view. It consists of a
-frontend and a backend.
+The simulation web app is shown in the right editor view.
 
-First, start the backend in a terminal:
-
-```shell
-npm run backend
-```
-
-If you run this project in a GitHub codespace, then make the endpoint public.
-
-Next, copy the endpoint URL from the **Ports** tab of your VisualStudio Code
-instance in the codespace and paste it as the `baseUrl` in
-[frontend/main.js](./frontend/main.js).
-
-Commit this change to your `main` branch before proceeding.
-
-Then, in a second terminal, serve the frontend:
+Start the service in a terminal:
 
 ```shell
-npm run frontend
+npm start
 ```
 
-In a codespace, also make this endpoint public. Then you can open can open the
-exposed port 3000 by right clicking it and selecting **Preview in Editor**.
+Then open the URL shown in the output to view the simulation web app in your
+browser.
 
-Otherwise, open the URL shown in the output of the frontend to view the
-simulation web app in your browser.
+In a codespace you can activate the panel **Ports** next to the **Terminal**
+tab. From there you can right click the port 5001 entry and select
+**Preview in Editor**. This show the web app in the **Simple Browser**.
 
 ### Create a `develop` branch
 

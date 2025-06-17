@@ -1,5 +1,5 @@
 (async () => {
-  const baseUrl = 'http://localhost:5001/';
+  const baseUrl = '/';
 
   const prodContext = buildContext(baseUrl, 'prod');
   const testContext = buildContext(baseUrl, 'test');
