@@ -17,7 +17,7 @@ You can run this workshop as a team or individually.
 
 The workshop provides a small web application to visualize the development
 status. If you want to run the workshop in a GitHub codespace, you are ready.
-If you are using your local comupter, then you need a recent Node.js version to
+If you are using your local computer, then you need a recent Node.js version to
 run the web app.
 
 ### Team setup: Create workshop repository
