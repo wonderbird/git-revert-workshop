@@ -1,5 +1,23 @@
 # Git revert workshop
 
+<!-- To update the table of contents, run `doctoc` in the terminal: `doctoc --maxlevel 2 README.md` -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Outline](#outline)
+- [Run the workshop](#run-the-workshop)
+- [Branching strategy: `main`, `develop`, `feat/xyz`](#branching-strategy-main-develop-featxyz)
+- ["The System" and the simulation](#the-system-and-the-simulation)
+- [Run the simulation web app](#run-the-simulation-web-app)
+- [Visualize the git history in Visual Studio Code](#visualize-the-git-history-in-visual-studio-code)
+- [Exercises](#exercises)
+- [References](#references)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Outline
+
 Git revert workshop for continuous integration and branching experiments.
 
 In this workshop you will learn to revert merge commits on a branch, which is
