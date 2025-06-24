@@ -13,12 +13,48 @@ phase of concurrent development. This workshop addresses the step
 
 ## Run the workshop
 
+### Prerequisites: Node.js, NPM
+
 You can run this workshop as a team or individually.
 
 The workshop provides a small web application to visualize the development
-status. If you want to run the workshop in a GitHub codespace, you are ready.
-If you are using your local computer, then you need a recent Node.js version to
-run the web app.
+status.
+
+If you want to run the workshop in a GitHub codespace, you are ready.
+
+If you are using your local computer, then you need a recent Node.js version
+with the node package manager `npm` to run the web app.
+
+As an alternative to installing the tools, you can open the project in a
+[Dev Container](https://code.visualstudio.com/docs/devcontainers/create-dev-container)
+in order to start without installing Node.js. To do so:
+
+1. Make sure your Container Daemon is running (Docker, Rancher Desktop, Podman,
+   etc.)
+2. Open the Visual Studio Code command palette by pressing CTL+SHIFT+P (Windows,
+   Linux) or CMD+SHIFT+P (macOS).
+3. Select **Dev Containers: Reopen in Container**
+
+To leave the Dev Container, open the command palette and select
+**Dev Containers: Reopen Folder locally**.
+
+**Troubleshooting:** "'Invalid mount config' error when starting Dev Container using Rancher Desktop"
+
+If you see this error message, then move the files
+
+- `\\wsl.localhost\Ubuntu\mnt\wslg\runtime-dir\wayland-0` and
+- `\\wsl.localhost\Ubuntu\mnt\wslg\runtime-dir\wayland-0.lock`
+
+to a backup folder.
+
+Then retry opening the folder in a dev container.
+
+>[!WARNING]
+>
+> The files tend to come back after you end the session. So keep your explorer
+> window open so that you can "back them up" again ...
+
+See also: [KeesCBakker's response to: 'Invalid mount config' error when starting Dev Container using Rancher Desktop](https://github.com/microsoft/vscode-remote-release/issues/8306#issuecomment-1938540639)
 
 ### Team setup: Create workshop repository
 
