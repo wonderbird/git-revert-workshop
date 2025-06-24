@@ -26,10 +26,10 @@ If you are using your local computer, then you need a recent Node.js version
 with the node package manager `npm` to run the web app.
 
 As an alternative to installing the tools, you can open the project in a
-[Dev Container](https://code.visualstudio.com/docs/devcontainers/create-dev-container)
-in order to start without installing Node.js. To do so:
+[Dev Container](https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-open-an-existing-folder-in-a-container)
+in order to start without installing Node.js.
 
-1. Make sure your Container Daemon is running (Docker, Rancher Desktop, Podman,
+1. Make sure your container daemon is running (Docker, Rancher Desktop, Podman,
    etc.)
 2. Open the Visual Studio Code command palette by pressing CTL+SHIFT+P (Windows,
    Linux) or CMD+SHIFT+P (macOS).
@@ -38,23 +38,7 @@ in order to start without installing Node.js. To do so:
 To leave the Dev Container, open the command palette and select
 **Dev Containers: Reopen Folder locally**.
 
-**Troubleshooting:** "'Invalid mount config' error when starting Dev Container using Rancher Desktop"
-
-If you see this error message, then move the files
-
-- `\\wsl.localhost\Ubuntu\mnt\wslg\runtime-dir\wayland-0` and
-- `\\wsl.localhost\Ubuntu\mnt\wslg\runtime-dir\wayland-0.lock`
-
-to a backup folder.
-
-Then retry opening the folder in a dev container.
-
->[!WARNING]
->
-> The files tend to come back after you end the session. So keep your explorer
-> window open so that you can "back them up" again ...
-
-See also: [KeesCBakker's response to: 'Invalid mount config' error when starting Dev Container using Rancher Desktop](https://github.com/microsoft/vscode-remote-release/issues/8306#issuecomment-1938540639)
+**Troubleshooting:** [Dev Container troubleshooting](./docs/dev-container-troubleshooting.md).
 
 ### Team setup: Create workshop repository
 
@@ -121,32 +105,6 @@ feature to appear in the PROD system.
 Finally, they merge `main` back into `develop` to ensure that both branches
 are always in sync. They usually delete their feature branch afterwards.
 
-## About the exercises
-
-The exercises simulate how multiple teams develop features concurrently.
-
-Exercise 1 shows the happy path: The feature works out of the box.
-
-Exercise 2 shows the unhappy path: A feature doesn't pass the integration tests
-and needs to be fixed. Before we fix the broken feature, we remove it from
-the TEST system. This allows other teams to ship their features while we are
-debugging.
-
-Exercise 3 shows the unhappy path from the perspective of two teams working
-concurrently. Both teams start at the same time. The first team merges a broken
-feature into `develop`. They revert that merge commit so that the other team
-can ship a working feature. Then the broken feature is fixed and shipped in
-addition.
-
-Exercise 4 repeats exercises 2 and 3 assuming that the `main` and `develop`
-branches are protected. This means that the developers cannot commit directly
-to these branches.
-
-Exercise 5 shows how to avoid the reapply merge commit used in exercises 2
-and 3. This practice simplifies future debugging efforts and is described in
-detail in (3). Instead of reverting the revert commit, we recreate the feature
-branch using the `git rebase` command.
-
 ## "The System" and the simulation
 
 In this simulation "The System" is represented by the contents of the
@@ -188,6 +146,17 @@ To use the integrated **Simple Browser** in a codespace, activate the panel
 **Ports** (1) next to the **Terminal** tab. Right click the **node main.js**
 entry (2) and select **Preview in Editor** (3).
 
+### Commit npm package updates
+
+It is likely that `npm` will update the `package-lock.json` file when you
+install the packages. Commit these changes to avoid merge conflicts with your
+team members:
+
+```shell
+git add package-lock.json
+git commit -m "deps: update npm packages"
+```
+
 ### Create a `develop` branch
 
 To set up the TEST system, create and checkout the `develop` branch:
@@ -216,300 +185,11 @@ Other tools to visualize the git history are:
 - [Sourcetree](https://www.sourcetreeapp.com/) for Windows and macOS
 - [Fork](https://git-fork.com/) for Windows and macOS
 
-## Exercise 1: Implement and ship a working feature
+## Exercises
 
-By "implement a feature" we mean that you add a line to the end of the file
-[workflows.txt](./workflows.txt). This will simulate the work required to add
-a use case to the system.
+The exercises are described in the [/docs/README.md](./docs/README.md) file.
 
-```mermaid
----
-title: Happy path
----
-gitGraph
-   commit id: "Initial commit"
-   branch develop
-   branch feat/register
-   commit id: "feat: register user"
-   checkout develop
-   merge feat/register tag: "GREEN"
-   checkout main
-   merge develop tag: "v1"
-   checkout develop
-   merge main
-```
-
-1. Create and checkout the feature branch `feat/register` based on the `develop` branch: `git switch develop; git checkout -b feat/register`
-
-2. Add the line `Register User: As a user I want to register, so that I can log in.` to the file [workflows.txt](./workflows.txt) and commit the changes with a speaking commit message: `git commit -am "feat: register user"`
-
-3. Merge the feature branch into `develop`. Attention: Always create a merge commit, so that we could revert the merge easily. Use the `--no-ff` option. `git switch develop; git merge --no-ff feat/register`.
-
-4. Refresh your web browser showing the simulation web app and compare the PROD system to the TEST system. TEST should show the added workflow while PROD is still empty.
-
-5. Now let's assume that our integration tests were successful. Merge `develop` into `main`: `git switch main; git merge --no-ff develop`.
-
-6. Refresh your web browser again. Now PROD and TEST should show the same workflows, but a different commit history - The final merge commit is missing on TEST.
-
-7. Merge `main` back into `develop`: `git switch develop; git merge --no-ff main`.
-
-8. Delete the feature branch: `git branch -d feat/register`
-
-You have successfully added a feature :-)
-
-## Exercise 2: Implement a feature failing the tests in TEST, revert, fix, ship to PROD
-
-In this exercise, we will add a new workflow with typo in the short description.
-
-```mermaid
----
-title: Rollback and fix
----
-gitGraph
-   commit id: "..." tag: "v1"
-   branch develop
-   branch feat/add-to-cart
-   commit id: "feat: add to cart"
-   checkout develop
-   merge feat/add-to-cart tag: "RED"
-   commit id: "revert" type: REVERSE tag: "GREEN"
-   checkout feat/add-to-cart
-   merge develop type: REVERSE
-   commit id: "reapply" type: HIGHLIGHT
-   commit id: "fix: add to cart"
-   checkout develop
-   merge feat/add-to-cart tag: "GREEN"
-   checkout main
-   merge develop tag: "v2"
-   checkout develop
-   merge main
-```
-
-Using the row `-dd to Cart: As a user I want to add a product to the shopping cart, so that I can purchase it later.`, repeat steps 1-4 of exercise 1. Name your feature branch `feat/add-to-cart`.
-
-4. The TEST system should show the workflow with the typo in the short description
-
-5. Revert the merge commit on the `develop` branch to simulate that we free the test system for our peer developers:
-
-   1. Inspect the merge commit to identify the ID of the parent you want to keep
-
-   2. Copy the ID of the merge commit
-
-   3. Revert the merge commit on develop: `git switch develop; git revert COMMITID -m X` on `develop` where X represents the commit ID of the head you want to keep. (2) gives more details on this. Carefully inspect the commit message - it shows details about what has been reverted.
-
-6. Verify that the TEST system does not show the new workflow. The commit history will show the merge commit and the revert commit
-
-7. Switch to your feature branch: `git switch feat/add-to-cart`
-
-8. Merge `develop` into your feature branch. Note that this will also remove your feature from your feature branch temporarily: `git merge --no-ff develop`
-
-9. On your feature branch, revert the revert commit you have applied to `develop`. This "reapply" commit will bring the broken feature back:
-
-   1. Get the ID of the revert commit on the `develop` branch
-
-   2. Reapply the broken feature by reverting the revert commit: `git revert COMMITID`
-
-   3. (relevant in exercise 3) If another team has shipped a feature in between, there will be merge conflicts. Fix these conflicts, but don't fix the broken feature yet. We want to keep reapply commit separate from the bug fix.
-
-10. Fix the typo and commit it to the feature branch: `Add to Cart: As a user I want to add a product to the shopping cart, so that I can purchase it later.` - `git commit -am "fix: add to cart`
-
-11. Merge the fixed feature to `develop`: `git switch develop; git merge --no-ff feat/add-to-cart`
-
-12. Now the TEST system shows the corrected feature and the associated history
-
-13. Finish shipping to PROD by following steps 5-7 of exercise 1.
-
-## Exercise 3: Concurrent feature development
-
-In this exercise we will explicitly ship two concurrent features. The first feature is broken. We will revert the commit in TEST so that the second feature can be shipped before the fixed first feature is shipped.
-
-```mermaid
----
-title: Rollback feature 1 - deploy feature 2 - fix feature 1
----
-gitGraph
-   commit id: "..." tag: "v2"
-   branch develop
-
-   branch feat/checkout-cart
-   commit id: "feat: checkout cart"
-   
-   checkout develop
-   branch feat/add-paypal
-
-   checkout develop
-   merge feat/checkout-cart tag: "RED"
-   commit id: "revert" type: REVERSE tag: "GREEN"
-
-   checkout feat/add-paypal
-   commit id: "feat: add paypal"
-   checkout develop
-   merge feat/add-paypal tag: "GREEN"
-   checkout main
-   merge develop tag: "v3"
-   checkout develop
-   merge main
-
-   checkout feat/checkout-cart
-   merge develop type: REVERSE
-   commit id: "reapply" type: HIGHLIGHT
-   commit id: "fix: checkout cart"
-   checkout develop
-   merge feat/checkout-cart tag: "GREEN"
-   checkout main
-   merge develop tag: "v4"
-   checkout develop
-   merge main
-```
-
-First, create two feature branches from `develop`:
-
-```shell
-git branch feat/checkout-cart
-git branch feat/add-paypal
-```
-
-Next, checkout the `feat/checkout-cart`. Then repeat steps 1-4 of exercise 1 using the workflow `-heckout Cart: As a user I want to checkout my shopping cart, so that my order gets shipped.`
-
-Again, we want to free the TEST system for our peers. So execute steps 5 and 6 of exercise 2 to revert the merge to `develop`.
-
-Before proceeding, we will simulate that another team develops a working feature in parallel: Switch to the branch `feat/add-paypal` and execute the full exercise 1 using the workflow `Add Paypal: As a customer I want to register my paypal account, so I can checkout my cart faster.`.
-
-Note that the other team can ship their changes, because we reverted our broken feature on the `develop` branch.
-
-Finally, fix the broken feature and ship it to PROD. Follow the steps 7 - end of exercise 2.
-
-## Exercise 4: Protected main and develop branches
-
-Now we will practice the revert step in a repository, which does not allow committing directly to the `main` and `develop` branches.
-
-This setup is used when multiple team work concurrently on different feature branches.
-
-For the sake of simplicity we will use the same scenario as in exercise 3. We will bring a broken feature into the TEST system. Then we will revert that merge commit, so that a different team could ship a working feature. Finally, we will fix the broken feature and ship it to TEST and PROD.
-
-1. If you have not created a dedicated repository as described in section **Team setup: Create workshop repository** above, then do that now. If you keep the repository on GitHub, then it must be public. For a private repository you can only set up branch protection rules, if you have a paid GitHub account.
-
-2. Follow the instructions in section **Run the simulation web app** above to setup the `develop` branch. Push the `develop` branch to the remote.
-
-3. Configure your repository to prohibit commits on the `main` and `develop` branches. In GitHub this is done on the **Settings / Rules / Rulesets** page for the repository. Choose the green **New ruleset** button at the top right to set up a **New branch ruleset**.
-
-4. Create a feature branch `feat/send-tracking-link`. Using the row `-end Tracking Link: As a user I want to receive a tracking link, so that I can see the status of my delivery.`, repeat steps 1-4 of exercise 1.
-
->[!IMPORTANT]
->
->Use a pull request to merge into the `develop` branch.
->After completing the pull request, you can delete the remote branch.
->Update your local branches via `git switch develop; git fetch --all --prune; git pull`.
-
-5. The TEST system should show the workflow with the typo in the short description
-
-6. In order to revert the merge commit on the `develop` branch,
-
-   1. Create a bugfix branch: `git checkout -b fix/send-tracking-link`
-
-   2. Inspect the merge commit to identify the ID of the parent you want to keep
-
-   3. Copy the ID of the merge commit
-
-   4. Revert the merge commit on the bugfix branch: `git revert COMMITID -m X` where X represents the commit ID of the head you want to keep. (2) gives more details on this. Carefully inspect the commit message - it shows details about what has been reverted.
-
-   5. Push the changes to the remote: `git push --set-upstream origin fix/send-tracking-link`
-
-   6. Create a pull request and merge the fix into `develop`
-
-   7. Update your local branches: `git switch develop; git pull`.
-
-7. Verify that the TEST system does not show the new workflow. The commit history will show the merge commit and the revert commit
-
->[!NOTE]
->
->At this stage other teams can ship features as described in exercise 3.
-
-8. Switch to the bugfix branch: `git switch fix/send-tracking-link`. If you deleted the branch when merging the pull request, then fix the upstream locally: `git branch --unset-upstream`.
-
-9. On your feature branch, revert the previous revert commit to bring the broken feature back:
-
-   1. Get the ID of the revert commit
-
-   2. Reapply the broken feature by reverting the revert commit: `git revert COMMITID`
-
-   3. (relevant in exercise 3) If another team has shipped a feature in between, there will be merge conflicts. Fix these conflicts, but don't fix the broken feature yet. We want to keep reapply commit separate from the bug fix.
-
-10. Fix the typo and commit it: `Send Tracking Link: As a user I want to receive a tracking link, so that I can see the status of my delivery.` - `git commit -am "fix: send tracking link"`
-
-11. Push the changes to the remote
-
-12. Use a pull request to merge the fixed feature to `develop` and update your local branches `git switch develop; git fetch --all --prune; git pull`
-
-13. Now the TEST system shows the corrected feature and the associated history
-
-14. Finish shipping to PROD by following steps 5-7 of exercise 1.
-
-15. Sync your branches in order to verify the feature in PROD: `git switch main; git pull`
-
-## Exercise 5: Recreate topic branch instead of reapply merge
-
-The reapplied merge commit causes a headache when bisecting the git history in order to identify the commit which has introduced a problem (3). A better solution is to replay the entire change set of the topic branch and avoid the reapply merge.
-
-The following diagram presents an alternative to exercise 2, replacing the reapply merge with a replayed topic branch.
-
-```mermaid
----
-title: Recreate topic branch instead of reapply merge
----
-gitGraph
-   commit id: "..." tag: "v5"
-
-   branch develop
-   branch feat/purchase-items
-   branch feat/purchase-items-replay
-   
-   checkout feat/purchase-items
-   commit id: "feat: add to cart"
-
-   checkout feat/purchase-items-replay
-   commit id: "feat: add to cart (replay)"
-
-   checkout develop
-   merge feat/purchase-items tag: "RED"
-   commit id: "revert" type: REVERSE tag: "GREEN"
-
-   checkout feat/purchase-items
-   commit id: "fix: add to cart"
-
-   checkout feat/purchase-items-replay
-   commit id: "fix: add to cart (replay)"
-
-   checkout develop
-   commit id: "other team's feature"
-
-   checkout main
-   merge develop tag: "v6"
-
-   checkout develop
-   merge feat/purchase-items-replay tag: "GREEN"
-
-   checkout main
-   merge develop tag: "v7"
-```
-
-Using the row `-urchase Items: As a buyer I want to purchase ordered items, so that I ship them to the customer.`, repeat exercise 2. Name your feature branch `feat/purchase-items`.
-
-Repeat exercise 2, but stop after step 6 and continue with the following steps:
-
-7. Switch to `feat/purchase-items`, fix the typo and commit it to the feature branch.
-
-8. Recreate the topic branch `feat/purchase-items`
-
-   1. Find the ID of the base commit of the `feat/purchase-items` branch. This is the commit, where the feature branch was created from `develop`.
-
-   2. Rebase the currently checked out feature branch onto the base commit: `git rebase --no-ff BASECOMMITID`
-
-9. (optional) Merge `develop` into the feature branch to ensure that the feature branch is up-to-date with the latest changes in `develop`: `git merge --no-ff develop`
-
-10. Ship the feature as described in steps 11 ff. of exercise 2.
-
-## Literature
+## References
 
 (1) J. Shore, „Continuous Integration on a Dollar a Day“. Accessed: Jun. 14, 2025. [Online]. Available: [https://www.jamesshore.com/v2/blog/2006/continuous-integration-on-a-dollar-a-day](https://www.jamesshore.com/v2/blog/2006/continuous-integration-on-a-dollar-a-day)
 
