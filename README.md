@@ -138,6 +138,15 @@ feature into `develop`. They revert that merge commit so that the other team
 can ship a working feature. Then the broken feature is fixed and shipped in
 addition.
 
+Exercise 4 repeats exercises 2 and 3 assuming that the `main` and `develop`
+branches are protected. This means that the developers cannot commit directly
+to these branches.
+
+Exercise 5 shows how to avoid the reapply merge commit used in exercises 2
+and 3. This practice simplifies future debugging efforts and is described in
+detail in (3). Instead of reverting the revert commit, we recreate the feature
+branch using the `git rebase` command.
+
 ## "The System" and the simulation
 
 In this simulation "The System" is represented by the contents of the
@@ -248,7 +257,7 @@ gitGraph
 
 You have successfully added a feature :-)
 
-### Exercise 2: Implement a feature failing the tests in TEST, revert, fix, ship to PROD
+## Exercise 2: Implement a feature failing the tests in TEST, revert, fix, ship to PROD
 
 In this exercise, we will add a new workflow with typo in the short description.
 
@@ -310,7 +319,7 @@ Using the row `-dd to Cart: As a user I want to add a product to the shopping ca
 
 13. Finish shipping to PROD by following steps 5-7 of exercise 1.
 
-### Exercise 3: Concurrent feature development
+## Exercise 3: Concurrent feature development
 
 In this exercise we will explicitly ship two concurrent features. The first feature is broken. We will revert the commit in TEST so that the second feature can be shipped before the fixed first feature is shipped.
 
@@ -370,7 +379,7 @@ Note that the other team can ship their changes, because we reverted our broken 
 
 Finally, fix the broken feature and ship it to PROD. Follow the steps 7 - end of exercise 2.
 
-### Exercise 4: Protected main and develop branches
+## Exercise 4: Protected main and develop branches
 
 Now we will practice the revert step in a repository, which does not allow committing directly to the `main` and `develop` branches.
 
@@ -438,8 +447,72 @@ For the sake of simplicity we will use the same scenario as in exercise 3. We wi
 
 15. Sync your branches in order to verify the feature in PROD: `git switch main; git pull`
 
+## Exercise 5: Recreate topic branch instead of reapply merge
+
+The reapplied merge commit causes a headache when bisecting the git history in order to identify the commit which has introduced a problem (3). A better solution is to replay the entire change set of the topic branch and avoid the reapply merge.
+
+The following diagram presents an alternative to exercise 2, replacing the reapply merge with a replayed topic branch.
+
+```mermaid
+---
+title: Recreate topic branch instead of reapply merge
+---
+gitGraph
+   commit id: "..." tag: "v5"
+
+   branch develop
+   branch feat/purchase-items
+   branch feat/purchase-items-replay
+   
+   checkout feat/purchase-items
+   commit id: "feat: add to cart"
+
+   checkout feat/purchase-items-replay
+   commit id: "feat: add to cart (replay)"
+
+   checkout develop
+   merge feat/purchase-items tag: "RED"
+   commit id: "revert" type: REVERSE tag: "GREEN"
+
+   checkout feat/purchase-items
+   commit id: "fix: add to cart"
+
+   checkout feat/purchase-items-replay
+   commit id: "fix: add to cart (replay)"
+
+   checkout develop
+   commit id: "other team's feature"
+
+   checkout main
+   merge develop tag: "v6"
+
+   checkout develop
+   merge feat/purchase-items-replay tag: "GREEN"
+
+   checkout main
+   merge develop tag: "v7"
+```
+
+Using the row `-urchase Items: As a buyer I want to purchase ordered items, so that I ship them to the customer.`, repeat exercise 2. Name your feature branch `feat/purchase-items`.
+
+Repeat exercise 2, but stop after step 6 and continue with the following steps:
+
+7. Switch to `feat/purchase-items`, fix the typo and commit it to the feature branch.
+
+8. Recreate the topic branch `feat/purchase-items`
+
+   1. Find the ID of the base commit of the `feat/purchase-items` branch. This is the commit, where the feature branch was created from `develop`.
+
+   2. Rebase the currently checked out feature branch onto the base commit: `git rebase --no-ff BASECOMMITID`
+
+9. (optional) Merge `develop` into the feature branch to ensure that the feature branch is up-to-date with the latest changes in `develop`: `git merge --no-ff develop`
+
+10. Ship the feature as described in steps 11 ff. of exercise 2.
+
 ## Literature
 
 (1) J. Shore, „Continuous Integration on a Dollar a Day“. Accessed: Jun. 14, 2025. [Online]. Available: [https://www.jamesshore.com/v2/blog/2006/continuous-integration-on-a-dollar-a-day](https://www.jamesshore.com/v2/blog/2006/continuous-integration-on-a-dollar-a-day)
 
 (2) B. James and D. Kaplan, “Answer to ‘How do I revert a merge commit that has already been pushed to remote?,’” Stack Overflow. Accessed: Jun. 15, 2025. [Online]. Available: [https://stackoverflow.com/a/7100005](https://stackoverflow.com/a/7100005)
+
+(3) L. Torvalds, J. C. Hamano: “How to revert a faulty merge”, GitHub. Accessed: Jun. 24, 2025. [Online]. Available: [https://github.com/git/git/blob/master/Documentation/howto/revert-a-faulty-merge.adoc](https://github.com/git/git/blob/master/Documentation/howto/revert-a-faulty-merge.adoc)
